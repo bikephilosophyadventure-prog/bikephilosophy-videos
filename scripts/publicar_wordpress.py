@@ -223,9 +223,14 @@ class WordPress:
         self.s = requests.Session()
         self.s.auth = (usuario, clave.replace(" ", ""))
         self.s.headers["User-Agent"] = "bikephilosophy-videos/1.0"
+        token = os.environ.get("WP_CF_TOKEN", "").strip()
+        if token:                                    # deja pasar el script por la regla de Cloudflare
+            self.s.headers["X-Bikephilosophy-Token"] = token
 
     def _ok(self, r):
         if r.status_code >= 400:
+            if "Just a moment" in r.text or "cf-chl" in r.text:
+                sys.exit(f"Cloudflare ha bloqueado la petición ({r.status_code}). Falta la regla que deja pasar al script; ver README.")
             sys.exit(f"WordPress respondió {r.status_code}: {r.text[:300]}")
         return r.json()
 
