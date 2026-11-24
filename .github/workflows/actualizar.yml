@@ -33,12 +33,14 @@ jobs:
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
 
       - name: Publicar las fichas en WordPress
+        continue-on-error: true    # si WordPress falla, el buscador se actualiza igual
         run: python scripts/publicar_wordpress.py
         env:
           WP_URL: ${{ secrets.WP_URL }}
           WP_USER: ${{ secrets.WP_USER }}
           WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
           BUSCADOR_URL: ${{ secrets.BUSCADOR_URL }}
+          WP_CF_TOKEN: ${{ secrets.WP_CF_TOKEN }}
 
       - name: Publicar cambios
         run: |
