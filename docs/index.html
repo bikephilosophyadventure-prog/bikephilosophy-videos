@@ -72,6 +72,10 @@ a{color:inherit}
 .chip:hover{border-color:var(--verde-marca);color:var(--verde-marca)}
 @media (max-width:640px){.buscador{flex-direction:column}.buscador .btn{width:100%}}
 
+/* Modo incrustado (?embed=1): sin cabecera propia, la tienda ya tiene la suya */
+.embed .top{display:none}
+:root.embed{padding-top:0;padding-bottom:0}
+
 /* Carrusel */
 .carrusel{background:var(--negro-marca);color:var(--blanco);padding-bottom:72px}
 .car-cab{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:24px;border-top:1px solid #2E2A28;padding-top:48px}
@@ -288,7 +292,7 @@ function fila(v, h, ws){
 }
 
 function extras(v){
-  const bloque = (titulo, lista) => lista && lista.length ? `<div class="extra"><h5>${titulo}</h5><ul>${lista.map(p => `<li><a class="btn btn-linea" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.nombre)}</a></li>`).join("")}</ul></div>` : "";
+  const bloque = (titulo, lista) => lista && lista.length ? `<div class="extra"><h5>${titulo}</h5><ul>${lista.map(p => `<li><a class="btn btn-linea" href="${esc(p.url)}" target="${EMBED && p.url.includes("bikephilosophy.es") ? "_top" : "_blank"}" rel="noopener">${esc(p.nombre)}</a></li>`).join("")}</ul></div>` : "";
   return bloque("En la tienda", v.productos) + bloque("Vídeos mencionados", v.relacionados);
 }
 
@@ -302,7 +306,7 @@ function tarjeta(v, hits, ws){
   return `<article class="video" id="v-${v.id}">
     <div class="video-cab">
       <div><h3>${esc(v.titulo)}</h3><p class="sub">${sub}</p></div>
-      <a class="btn btn-linea" href="${urlEn(v.id, 0)}" target="_blank" rel="noopener">Abrir en YouTube</a>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">${v.pagina ? `<a class="btn btn-verde" href="${esc(v.pagina)}" target="${EMBED ? "_top" : "_self"}">Ficha y transcripción</a>` : ""}<a class="btn btn-linea" href="${urlEn(v.id, 0)}" target="_blank" rel="noopener">Abrir en YouTube</a></div>
     </div>
     ${tira(v, caps)}
     <ul class="momentos">${visibles.map(h => fila(v, h, ws)).join("")}</ul>
@@ -420,6 +424,20 @@ setInterval(() => {
   const alFinal = $pista.scrollLeft + $pista.clientWidth >= $pista.scrollWidth - 4;
   $pista.scrollTo({left: alFinal ? 0 : $pista.scrollLeft + paso(), behavior: "smooth"});
 }, 5000);
+
+/* ===== Modo incrustado en la tienda ===== */
+const EMBED = new URLSearchParams(location.search).has("embed");
+if(EMBED){
+  document.documentElement.classList.add("embed");
+  document.querySelectorAll('a[href^="https://www.bikephilosophy.es"]').forEach(a => a.target = "_top");
+  let ultima = 0;
+  const avisar = () => {
+    const h = Math.ceil(document.documentElement.scrollHeight);
+    if(h !== ultima){ ultima = h; parent.postMessage({tipo: "bp-videos-altura", altura: h}, "*"); }
+  };
+  new ResizeObserver(avisar).observe(document.body);
+  window.addEventListener("load", avisar);
+}
 
 /* ===== Arranque ===== */
 fetch("videos.json").then(r => { if(!r.ok) throw new Error(r.status); return r.json(); }).then(d => {
