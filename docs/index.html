@@ -362,7 +362,7 @@ const paso = () => { const c = $pista.querySelector(".vcard"); return c ? c.offs
 const navEstado = () => { $prev.disabled = $pista.scrollLeft < 4; $next.disabled = $pista.scrollLeft + $pista.clientWidth >= $pista.scrollWidth - 4; };
 
 function pintarCarrusel(){
-  $pista.innerHTML = VIDEOS.filter(v => !v.short).slice(0, EN_CARRUSEL).map(v => {.map(v => {
+  $pista.innerHTML = VIDEOS.filter(v => !v.short).slice(0, EN_CARRUSEL).map(v => {
     const n = v.capitulos.length;
     const sub = n > 1 ? `<a class="cap" href="#v-${v.id}">${n} capítulos</a>` : (v.short ? "Short" : "Sin capítulos");
     return `<article class="vcard">
